@@ -1,3 +1,4 @@
+import { CoinGeckoCoinListWithMarketDataURLBuilder } from "../api/CoinGecko";
 import { HomePageTab } from "../types";
 import Tabs from "../../../components/Tabs";
 
@@ -11,13 +12,20 @@ const HomePageTabs = ({ onTabChange }: HomePageTabsProps) => {
     const _onTabChange = (tab: string) => {
         switch (tab) {
             case HomePageTab.All:
-                onTabChange('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin&names=Bitcoin&symbols=btc&category=layer-1&price_change_percentage=1h%2C24h%2C7d&sparkline=true&precision=18');
+                onTabChange(
+                    new CoinGeckoCoinListWithMarketDataURLBuilder()
+                        .vsCurrency('usd')
+                        .priceChangePercentages(['1h', '24h', '7d'])
+                        .sparkLine(true)
+                        .precision(18)
+                        .build()
+                )
                 break;
             case HomePageTab.Gainers:
-                onTabChange('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc');
+                //onTabChange('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc');
                 break;
             case HomePageTab.Losers:
-                onTabChange('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_asc');
+                //onTabChange('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_asc');
                 break;
         }
     }

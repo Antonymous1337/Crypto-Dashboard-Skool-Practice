@@ -31,7 +31,7 @@ export const Tabs = ({ tabs, onTabChange, direction, gap }: HomePageTabsProps) =
                     <Button
                         label={tab}
                         selected={tab === currentTab}
-                        onClick={() => handleClick(tab)}
+                        onClickFn={() => handleClick(tab)}
                         key={`tab-button-${tab}-${index}`}
                     />
                 )

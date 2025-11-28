@@ -11,7 +11,8 @@ interface ButtonProps {
     selectedLabelColor?: string;
     selectedFillColor?: string;
     selectedBorder?: string;
-    onClick?: () => void;
+    onClickFn?: () => void;
+    onHoverFn?: () => void;
 }
 
 const Button = ({
@@ -25,7 +26,8 @@ const Button = ({
     selectedLabelColor = 'white',
     selectedFillColor = 'blue',
     selectedBorder = '1px solid white',
-    onClick,
+    onClickFn,
+    onHoverFn
 }: ButtonProps) => {
     const [hover, setHover] = useState<boolean>(false);
     const buttonStyle: React.CSSProperties = {
@@ -38,11 +40,13 @@ const Button = ({
         opacity: hover ? 1 : 0.8,
     }
 
+    
+
     return (
         <button 
             style={buttonStyle}
-            onClick={onClick}
-            onMouseEnter={() => setHover(true)}
+            onClick={onClickFn}
+            onMouseEnter={() => { setHover(true); onHoverFn?.(); }}
             onMouseLeave={() => setHover(false)}>
                 {label}
         </button>

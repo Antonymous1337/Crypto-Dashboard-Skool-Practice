@@ -1,39 +1,45 @@
+import { URLBuilder } from "./URLBuilder";
+
 /**
  * Class used as a one-time-use builder for CoinGecko API URLs. Designed to make URLS more readable
  * @link https://docs.coingecko.com/v3.0.1/reference/coins-markets
  */
-export class CoinGeckoCoinListWithMarketDataURLBuilder {
+export class CoinGeckoCoinListWithMarketDataURLBuilder extends URLBuilder {
 
     // Required
-    private readonly baseURL = "https://api.coingecko.com/api/v3/markets";
-    private vsCurrency: string | undefined = 'usd';
+    protected readonly _baseURL: string = "https://api.coingecko.com/api/v3/markets";
+    private _vsCurrency: string | undefined = 'usd';
 
-    public setVsCurrency(vsCurrency: VsCurrency) {
-        this.vsCurrency = vsCurrency;
+    public vsCurrency(vsCurrency: VsCurrency) {
+        this._vsCurrency = vsCurrency;
+        return this
     }
 
     // Optional
-    private category: string | undefined = undefined; // comes from different endpoint and cant be hardcoded https://api.coingecko.com/api/v3/coins/categories/list
-    private priceChangePercentages: PriceChangePercentages[] | undefined = undefined;
-    private sparkLine: boolean | undefined = undefined;
-    private precision: number | undefined = undefined;
-    private order: CoinGeckoOrder | undefined = undefined;
-    private page: number | undefined = undefined;
-    private perPage: number | undefined = undefined;
+    private _category: string | undefined = undefined; // comes from different endpoint and cant be hardcoded https://api.coingecko.com/api/v3/coins/categories/list
+    private _priceChangePercentages: PriceChangePercentages[] | undefined = undefined;
+    private _sparkLine: boolean | undefined = undefined;
+    private _precision: number | undefined = undefined;
+    private _order: CoinGeckoOrder | undefined = undefined;
+    private _page: number | undefined = undefined;
+    private _perPage: number | undefined = undefined;
 
-    public setCategory(category: string) {
-        this.category = category
+    public category(category: string) {
+        this._category = category
+        return this
     }
 
-    public setPriceChangePercentages(percentages: PriceChangePercentages[]) {
-        this.priceChangePercentages = percentages;
+    public priceChangePercentages(percentages: PriceChangePercentages[]) {
+        this._priceChangePercentages = percentages;
+        return this
     }
 
-    public setSparkLine(sparkLine: boolean) {
-        this.sparkLine = sparkLine;
+    public sparkLine(sparkLine: boolean) {
+        this._sparkLine = sparkLine;
+        return this
     }
 
-    public setPrecision(precision: number) {
+    public precision(precision: number) {
         let validatedPrecision = precision;
         if (precision < 0) {
             console.warn("Precision cannot be negative. Setting to 0.");
@@ -43,38 +49,44 @@ export class CoinGeckoCoinListWithMarketDataURLBuilder {
             console.warn("Precision cannot be greater than 18. Setting to 18.");
             validatedPrecision = 18;
         }
-        this.precision = validatedPrecision;
+        this._precision = validatedPrecision;
+        return this
     }
 
-    public setOrder(order: CoinGeckoOrder) {
-        this.order = order
+    public order(order: CoinGeckoOrder): CoinGeckoCoinListWithMarketDataURLBuilder {
+        this._order = order
+        return this
     }
 
-    public setPage(page: number) {
-        this.page = page;
+    public page(page: number) {
+        this._page = page;
+        return this
     }
 
-    public setPerPage(perPage: number) {
-        this.perPage = perPage;
+    public perPage(perPage: number) {
+        this._perPage = perPage;
+        return this
     }
+
+    
 
     private checkRequiredParams() {
-        if (!this.vsCurrency) { throw new Error("vs_currency not set"); }
+        if (!this._vsCurrency) { throw new Error("vs_currency not set"); }
     }
 
     public build(): string {
         this.checkRequiredParams();
         // %2C is url encoded comma
         const url = `
-            ${this.baseURL}?
-                vs_currency=${this.vsCurrency}
-                ${this.category ? `&category=${this.category}` : ''}
-                ${this.priceChangePercentages ? `&price_change_percentage=${this.priceChangePercentages.join('%2C')}` : ''}
-                ${this.sparkLine ? `&sparkline=${this.sparkLine}` : ''}
-                ${this.precision ? `&precision=${this.precision}` : ''}
-                ${this.order ? `&order=${this.order}` : ''}
-                ${this.page ? `&page=${this.page}` : ''}
-                ${this.perPage ? `&per_page=${this.perPage}` : ''}
+            ${this._baseURL}?
+                vs_currency=${this._vsCurrency}
+                ${this._category ? `&category=${this._category}` : ''}
+                ${this._priceChangePercentages ? `&price_change_percentage=${this._priceChangePercentages.join('%2C')}` : ''}
+                ${this._sparkLine ? `&sparkline=${this._sparkLine}` : ''}
+                ${this._precision ? `&precision=${this._precision}` : ''}
+                ${this._order ? `&order=${this._order}` : ''}
+                ${this._page ? `&page=${this._page}` : ''}
+                ${this._perPage ? `&per_page=${this._perPage}` : ''}
         `;
         return url
     }
