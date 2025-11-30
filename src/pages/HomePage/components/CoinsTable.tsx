@@ -1,19 +1,40 @@
 import type { CryptoAsset } from '../types';
 import Table, { type TableColumn } from '../../../components/Table';
+import { destructureURLEndpoint, getFromStringData, parseIntOrDefault } from '../../../utils';
 
 // import { useQuery } from "@tanstack/react-query";
 
 interface CoinsTableProps {
+    queryUrl: string
     coins: CryptoAsset[];
 }
 
-export const CoinsTable = ({ coins }: CoinsTableProps) => {
+export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
+
+    const destructuredURL = destructureURLEndpoint(queryUrl)
+
+    console.log(destructuredURL)
+
+    const [pageData, itemsPerPageData] = getFromStringData({
+        keys: ['page', 'per_page'],
+        options: destructuredURL.options,
+    })
+    const page = parseIntOrDefault(pageData?.[0], 0)
+    const itemsPerPage = parseIntOrDefault(itemsPerPageData?.[0], 100)
+
+    console.log(page, itemsPerPage)
 
     const desiredColumns = [
         {
-            label: 'ID',
-            rendererParams: ['id'],
-            renderer: ({ id }) => <span>{id}</span>,
+            label: '#',
+            rendererParams: ['index'],
+            renderer: ({ index }) => {
+                console.log('index', index)
+                const adjustedIndex = (parseIntOrDefault(index, 0) + 1) + (page * itemsPerPage)
+                return (
+                    <span>{adjustedIndex}</span>
+                )
+            },
         },
         {
             label: 'Symbol',

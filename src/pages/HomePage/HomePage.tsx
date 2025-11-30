@@ -41,7 +41,7 @@ const HomePage = () => {
     return (
         <Stack direction="column" gap="16px">
             <HomePageTabs onTabChange={setQueryUrl} />
-            <CoinsTable coins={coins} />
+            <CoinsTable queryUrl={queryUrl} coins={coins} />
         </Stack>
     );
 }

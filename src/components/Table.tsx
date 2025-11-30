@@ -20,6 +20,7 @@ const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
             {columns.map((col, coli) => {
                 const zippedParams: Record<string, string> = Object.fromEntries(
                     col.rendererParams.map((param) => {
+                        if (param === 'index') { return [param, `${rowi}`]}
                         if (!(param in row)) { return [param, '']; }
                         else return [param, row[param]?.toString() || ''];
                     })
