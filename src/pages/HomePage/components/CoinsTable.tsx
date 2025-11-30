@@ -1,6 +1,7 @@
-import type { CryptoAsset } from '../types';
+import type { CryptoAsset, SparklineData } from '../types';
 import Table, { type TableColumn } from '../../../components/Table';
-import { destructureURLEndpoint, getFromStringData, parseIntOrDefault } from '../../../utils';
+import { destructureURLEndpoint, getFromStringData, parseFloatOrDefault, parseIntOrDefault, toFixedLocaleString } from '../../../utils';
+import { Line, LineChart, XAxis, YAxis } from 'recharts';
 
 // import { useQuery } from "@tanstack/react-query";
 
@@ -22,14 +23,24 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
     const page = parseIntOrDefault(pageData?.[0], 0)
     const itemsPerPage = parseIntOrDefault(itemsPerPageData?.[0], 100)
 
-    console.log(page, itemsPerPage)
+    const isSparklineValid = (sparkline: unknown): sparkline is Exclude<SparklineData, null> => {
+        if (!sparkline || typeof sparkline !== 'object') return false
+        if (!('price' in sparkline)) return false
+        const priceArray = sparkline['price']
+        if (!priceArray || !Array.isArray(priceArray)) return false
+        if (priceArray.length === 0) return true
+        if (typeof priceArray[0] !== 'number') return false
+        if (!isFinite(priceArray[0])) return false
+        return true
+    }
+
+    console.log(coins)
 
     const desiredColumns = [
         {
             label: '#',
             rendererParams: ['index'],
             renderer: ({ index }) => {
-                console.log('index', index)
                 const adjustedIndex = (parseIntOrDefault(index, 0) + 1) + (page * itemsPerPage)
                 return (
                     <span>{adjustedIndex}</span>
@@ -37,31 +48,36 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             },
         },
         {
-            label: 'Symbol',
-            rendererParams: ['symbol'],
-            renderer: ({ symbol }) => <span>{symbol.toUpperCase()}</span>,
+            label: 'Coin',
+            rendererParams: ['image', 'name', 'symbol'],
+            renderer: ({ image, name, symbol }) => {
+                const parsedImage = JSON.parse(image)
+                const parsedName = JSON.parse(name)
+                const parsedSymbol = JSON.parse(symbol)
+                return (
+                    <span>
+                        <img src={parsedImage} alt="coin image" width={24} height={24} />
+                        {parsedName}
+                        {parsedSymbol.toUpperCase()}
+                    </span>
+                )
+            }
         },
         {
-            label: 'Name',
-            rendererParams: ['name'],
-            renderer: ({ name }) => <span>{name}</span>,
-        },
-        {
-            label: 'Image',
-            rendererParams: ['image'],
-            renderer: ({ image }) => <img src={image} alt="coin image" width={24} height={24} />,
-        },
-        {
-            label: 'Current',
+            label: 'Price',
             rendererParams: ['current_price'],
-            renderer: ({ current_price }) => <span>${parseFloat(current_price).toFixed(2)}</span>,
+            renderer: ({ current_price }) => {
+                const value = parseFloat(current_price);
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'currency')}`;
+                return <span>{formatted}</span>;
+            },
         },
         {
             label: '1h',
             rendererParams: ['price_change_percentage_1h_in_currency'],
             renderer: ({ price_change_percentage_1h_in_currency }) => {
                 const value = parseFloat(price_change_percentage_1h_in_currency);
-                const formatted = isNaN(value) ? 'N/A' : `${value.toFixed(2)}%`;
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             },
         },
@@ -70,7 +86,7 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             rendererParams: ['price_change_percentage_24h_in_currency'],
             renderer: ({ price_change_percentage_24h_in_currency }) => {
                 const value = parseFloat(price_change_percentage_24h_in_currency);
-                const formatted = isNaN(value) ? 'N/A' : `${value.toFixed(2)}%`;
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             },
         },
@@ -79,7 +95,7 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             rendererParams: ['price_change_percentage_7d_in_currency'],
             renderer: ({ price_change_percentage_7d_in_currency }) => {
                 const value = parseFloat(price_change_percentage_7d_in_currency);
-                const formatted = isNaN(value) ? 'N/A' : `${value.toFixed(2)}%`;
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             }
         },
@@ -88,14 +104,59 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             rendererParams: ['market_cap'],
             renderer: ({ market_cap }) => {
                 const value = parseFloat(market_cap);
-                const formatted = isNaN(value) ? 'N/A' : `$${value.toLocaleString()}`;
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 0, 'currency')}`;
                 return <span>{formatted}</span>;
             }
         },
         {
-            label: 'Rank',
-            rendererParams: ['market_cap_rank'],
-            renderer: ({ market_cap_rank }) => <span>{market_cap_rank}</span>,
+            label: 'Volume',
+            rendererParams: ['total_volume'],
+            renderer: ({ total_volume }) => {
+                const value = parseFloat(total_volume);
+                const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 0, 'currency')}`;
+                return <span>{formatted}</span>;
+            }
+        },
+        {
+            label: 'Last 7 Days',
+            rendererParams: ['sparkline_in_7d', 'price_change_percentage_7d_in_currency'],
+            renderer: ({ sparkline_in_7d, price_change_percentage_7d_in_currency}) => {
+                const parsedSparklineIn7d = JSON.parse(sparkline_in_7d)
+                const isValidSparkline = isSparklineValid(parsedSparklineIn7d)
+                if (!isValidSparkline) return <></>
+                const formattedData = []
+                while (formattedData.length != 168-parsedSparklineIn7d.price.length) formattedData.push({
+                    x: formattedData.length,
+                    y: 0
+                })
+                const finalizedData = formattedData.concat(parsedSparklineIn7d.price.map((dataPoint, i) => {
+                    return {
+                        x: i,
+                        y: dataPoint
+                    }
+                }))
+
+                const weekPriceChange = parseFloatOrDefault(price_change_percentage_7d_in_currency, 1);
+                let color = 'blue'
+                if      (weekPriceChange > 0) color = 'green'
+                else if (weekPriceChange < 0) color = 'red'
+                return (
+                    <LineChart
+                        style={{ width: '100px', maxWidth: '700px', height: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
+                        data={finalizedData}
+                        margin={{
+                            top: 0,
+                            right: 0,
+                            left: 0,
+                            bottom: 0,
+                        }}
+                    >
+                        <XAxis dataKey="x" hide/>
+                        <YAxis width="auto" hide />
+                        <Line type="monotone" dataKey="y" stroke={color} dot={false} activeDot={false} />
+                    </LineChart>
+                )
+            }
         }
     ] satisfies TableColumn[];
     

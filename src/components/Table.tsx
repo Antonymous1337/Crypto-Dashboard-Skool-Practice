@@ -22,7 +22,7 @@ const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
                     col.rendererParams.map((param) => {
                         if (param === 'index') { return [param, `${rowi}`]}
                         if (!(param in row)) { return [param, '']; }
-                        else return [param, row[param]?.toString() || ''];
+                        else return [param, JSON.stringify(row[param]) || ''];
                     })
                 );
                 const renderedCell = col.renderer(zippedParams);
@@ -36,7 +36,9 @@ const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
     return (
         <table>
             <thead>
-                {parsedHeaders}
+                <tr>
+                    {parsedHeaders}
+                </tr>
             </thead>
             <tbody>
                 {parsedData}

@@ -1,2 +1,2 @@
-export { type CryptoAsset } from './CryptoAsset';
+export { type CryptoAsset, type SparklineData } from './CryptoAsset';
 export { HomePageTab } from './HomePageTab';

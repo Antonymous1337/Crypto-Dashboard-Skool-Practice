@@ -45,3 +45,12 @@ export const parseFloatOrDefault = (str: string | undefined, onFail: number) => 
     if (!isFinite(parsedStr)) return onFail
     return parsedStr
 }
+
+export const toFixedLocaleString = (num: number, precision: number, style?: keyof Intl.NumberFormatOptionsStyleRegistry , currency?: string) => {
+    return num.toLocaleString(navigator.language, {
+        minimumFractionDigits: precision,
+        maximumFractionDigits: precision,
+        style: style,
+        currency: currency ?? 'USD'
+    })
+}

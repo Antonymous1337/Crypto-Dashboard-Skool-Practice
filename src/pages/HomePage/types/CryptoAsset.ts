@@ -35,12 +35,14 @@ export interface CryptoAsset extends Data {
   /** Added fields below */
 
   // if sparkline data = true and available
-  sparkline_in_7d?: {
-    price: number[];
-  } | null;
+  sparkline_in_7d?: SparklineData
 
   price_change_percentage_1h_in_currency?: number | null;
   price_change_percentage_24h_in_currency?: number | null;
   price_change_percentage_7d_in_currency?: number | null;
 
 }
+
+export type SparklineData = {
+  price: number[];
+  } | null
