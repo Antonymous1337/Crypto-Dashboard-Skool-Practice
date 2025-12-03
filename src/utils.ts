@@ -14,6 +14,14 @@ export const destructureURLEndpoint = (url: string): { baseURL: string, options:
     return { baseURL, options }
 }
 
+export const structureURLEndpoint = (baseURL: string, options: StringData): string => {
+    const optionsString = Object.entries(options).map(([key, valArr]) => {
+        const valStr = valArr.join('%2C')
+        return `${key}=${valStr}`
+    }).join('&')
+    return `${baseURL}?${optionsString}`
+}
+
 type GetFromStringDataOrDefaultParams = {
     keys: string[],
     index?: number, 

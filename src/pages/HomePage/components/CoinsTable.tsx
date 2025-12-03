@@ -1,6 +1,6 @@
 import type { CryptoAsset, SparklineData } from '../types';
 import Table, { type TableColumn } from '../../../components/Table';
-import { destructureURLEndpoint, getFromStringData, getPriceColor, parseFloatOrDefault, parseIntOrDefault, toFixedLocaleString } from '../../../utils';
+import { destructureURLEndpoint, structureURLEndpoint, getFromStringData, getPriceColor, parseFloatOrDefault, parseIntOrDefault, toFixedLocaleString } from '../../../utils';
 import { Line, LineChart, XAxis, YAxis } from 'recharts';
 import { useCallback, useMemo } from 'react';
 import { SortValue } from '../types/SortValue';
@@ -10,14 +10,14 @@ import { getSortedState } from '../types/SortedState';
 
 interface CoinsTableProps {
     queryUrl: string;
+    setQueryUrl: (url: string) => void;
     coins: CryptoAsset[];
-    sort: SortValue | undefined;
-    setSort: (newSort: SortValue) => void;
 }
 
-export const CoinsTable = ({ queryUrl, sort, setSort, coins }: CoinsTableProps) => {
+export const CoinsTable = ({ queryUrl, setQueryUrl, coins }: CoinsTableProps) => {
 
-    const destructuredURL = destructureURLEndpoint(queryUrl)
+    const destructuredURL = useMemo(() => destructureURLEndpoint(queryUrl), [queryUrl]);
+    const sort = destructuredURL.options['order']?.[0]
 
     const [pageData, itemsPerPageData] = getFromStringData({
         keys: ['page', 'per_page'],
@@ -38,15 +38,21 @@ export const CoinsTable = ({ queryUrl, sort, setSort, coins }: CoinsTableProps) 
     }
 
     const marketCapSortCallback = useCallback(() => {
-        if (sort === SortValue.MARKET_CAP_DESC) { setSort(SortValue.MARKET_CAP_ASC) }
-        else { setSort(SortValue.MARKET_CAP_DESC) }
-    }, [sort, setSort]);
+        let nextSort: string = SortValue.MARKET_CAP_DESC
+        if (sort === SortValue.MARKET_CAP_DESC) { nextSort = SortValue.MARKET_CAP_ASC }
+        const newOptions = { ...destructuredURL.options, order: [nextSort] }
+        const newURL = structureURLEndpoint(destructuredURL.baseURL, newOptions)
+        setQueryUrl(newURL)
+    }, [sort, destructuredURL, setQueryUrl]);
     const marketCapSortedState = getSortedState(sort, SortValue.MARKET_CAP_ASC, SortValue.MARKET_CAP_DESC)
 
     const volumeSortCallback = useCallback(() => {
-        if (sort === SortValue.VOLUME_DESC) { setSort(SortValue.VOLUME_ASC) }
-        else { setSort(SortValue.VOLUME_DESC) }
-    }, [sort, setSort]);
+        let nextSort: string = SortValue.VOLUME_DESC
+        if (sort === SortValue.VOLUME_DESC) { nextSort = SortValue.VOLUME_ASC }
+        const newOptions = { ...destructuredURL.options, order: [nextSort] }
+        const newURL = structureURLEndpoint(destructuredURL.baseURL, newOptions)
+        setQueryUrl(newURL)
+    }, [sort, destructuredURL, setQueryUrl]);
     const volumeSortedState = getSortedState(sort, SortValue.VOLUME_ASC, SortValue.VOLUME_DESC)
 
     const desiredColumns = useMemo(() => {

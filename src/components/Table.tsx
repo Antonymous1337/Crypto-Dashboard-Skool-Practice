@@ -1,7 +1,7 @@
 import Clickable from "./Clickable";
 import type { Data } from "../pages/HomePage/types/Data";
-import type { JSX } from "react";
-import type { SortedState } from "../pages/HomePage/types/SortedState";
+import { useState, type JSX } from "react";
+import { SortedState } from "../pages/HomePage/types/SortedState";
 
 interface TableProps<T extends Data> {
     columns: TableColumn[];
@@ -15,12 +15,8 @@ const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
 
     const parsedHeaders = columns.map((col, i) => {
 
-        const textWrapper = col.onSort 
-            ? <Clickable onClick={col.onSort}>{col.label}</Clickable>
-            : <>{col.label}</>
-
         return (
-            <th key={`header-${col.label}-${i}`}>{textWrapper}</th>
+            <ColumnHeader key={`col-header-${i}`} col={col} />
         )
     })
 
@@ -54,6 +50,34 @@ const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
             </tbody>
         </table>
     );
+}
+
+const ColumnHeader = ({ col }: { col: TableColumn }) => {
+    const [hover, setHover] = useState<boolean>(false);
+
+    const arrowString = (() => {
+        if (hover) {
+            if (col.sortedState === SortedState.ASC) return ' ▼'
+            if (col.sortedState === SortedState.DESC) return ' ▲'
+            return ' ▼'
+        }
+        if (col.sortedState === SortedState.ASC) return ' ▲'
+        if (col.sortedState === SortedState.DESC) return ' ▼'
+        return ''
+    })()
+
+    const textWrapper = col.onSort 
+        ? <Clickable onClick={col.onSort}>
+            <span onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                {col.label}
+                {arrowString}
+            </span>
+            </Clickable>
+        : <>{col.label}</>
+
+    return (
+        <th>{textWrapper}</th>
+    )
 }
 
 /**

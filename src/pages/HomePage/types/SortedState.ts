@@ -1,4 +1,4 @@
-const SortedState = {
+export const SortedState = {
     NONE: 'none',
     ASC: 'asc',
     DESC: 'desc'
