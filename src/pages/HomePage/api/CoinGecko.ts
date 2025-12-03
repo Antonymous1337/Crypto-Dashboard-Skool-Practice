@@ -77,17 +77,15 @@ export class CoinGeckoCoinListWithMarketDataURLBuilder extends URLBuilder {
     public build(): string {
         this.checkRequiredParams();
         // %2C is url encoded comma
-        const url = `
-            ${this._baseURL}?
-                vs_currency=${this._vsCurrency}
-                ${this._category ? `&category=${this._category}` : ''}
-                ${this._priceChangePercentages ? `&price_change_percentage=${this._priceChangePercentages.join('%2C')}` : ''}
-                ${this._sparkLine ? `&sparkline=${this._sparkLine}` : ''}
-                ${this._precision ? `&precision=${this._precision}` : ''}
-                ${this._order ? `&order=${this._order}` : ''}
-                ${this._page ? `&page=${this._page}` : ''}
-                ${this._perPage ? `&per_page=${this._perPage}` : ''}
-        `;
+        const url = `${this._baseURL}?` +
+                `vs_currency=${this._vsCurrency}` +
+                `${this._category ? `&category=${this._category}` : ''}` +
+                `${this._priceChangePercentages ? `&price_change_percentage=${this._priceChangePercentages.join('%2C')}` : ''}` +
+                `${this._sparkLine ? `&sparkline=${this._sparkLine}` : ''}` +
+                `${this._precision ? `&precision=${this._precision}` : ''}` +
+                `${this._order ? `&order=${this._order}` : ''}` +
+                `${this._page ? `&page=${this._page}` : ''}` +
+                `${this._perPage ? `&per_page=${this._perPage}` : ''}`;
         return url
     }
 }

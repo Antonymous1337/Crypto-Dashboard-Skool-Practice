@@ -1,6 +1,6 @@
 import type { CryptoAsset, SparklineData } from '../types';
 import Table, { type TableColumn } from '../../../components/Table';
-import { destructureURLEndpoint, getFromStringData, parseFloatOrDefault, parseIntOrDefault, toFixedLocaleString } from '../../../utils';
+import { destructureURLEndpoint, getFromStringData, getPriceColor, parseFloatOrDefault, parseIntOrDefault, toFixedLocaleString } from '../../../utils';
 import { Line, LineChart, XAxis, YAxis } from 'recharts';
 
 // import { useQuery } from "@tanstack/react-query";
@@ -33,8 +33,6 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
         if (!isFinite(priceArray[0])) return false
         return true
     }
-
-    console.log(coins)
 
     const desiredColumns = [
         {
@@ -76,7 +74,7 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             label: '1h',
             rendererParams: ['price_change_percentage_1h_in_currency'],
             renderer: ({ price_change_percentage_1h_in_currency }) => {
-                const value = parseFloat(price_change_percentage_1h_in_currency);
+                const value = parseFloat(price_change_percentage_1h_in_currency)/100;
                 const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             },
@@ -85,7 +83,7 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             label: '24h',
             rendererParams: ['price_change_percentage_24h_in_currency'],
             renderer: ({ price_change_percentage_24h_in_currency }) => {
-                const value = parseFloat(price_change_percentage_24h_in_currency);
+                const value = parseFloat(price_change_percentage_24h_in_currency)/100;
                 const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             },
@@ -94,7 +92,7 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
             label: '7d',
             rendererParams: ['price_change_percentage_7d_in_currency'],
             renderer: ({ price_change_percentage_7d_in_currency }) => {
-                const value = parseFloat(price_change_percentage_7d_in_currency);
+                const value = parseFloat(price_change_percentage_7d_in_currency)/100;
                 const formatted = isNaN(value) ? 'N/A' : `${toFixedLocaleString(value, 2, 'percent')}`;
                 return <span>{formatted}</span>;
             }
@@ -124,12 +122,13 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
                 const parsedSparklineIn7d = JSON.parse(sparkline_in_7d)
                 const isValidSparkline = isSparklineValid(parsedSparklineIn7d)
                 if (!isValidSparkline) return <></>
-                const formattedData = []
-                while (formattedData.length != 168-parsedSparklineIn7d.price.length) formattedData.push({
-                    x: formattedData.length,
+                const paddingData = []
+                // 167 is hours in week -1. Without the -1 some charts looked weird so this prevents that from happening
+                while (paddingData.length < 167-parsedSparklineIn7d.price.length) paddingData.push({ 
+                    x: paddingData.length,
                     y: 0
                 })
-                const finalizedData = formattedData.concat(parsedSparklineIn7d.price.map((dataPoint, i) => {
+                const finalizedData = paddingData.concat(parsedSparklineIn7d.price.map((dataPoint, i) => {
                     return {
                         x: i,
                         y: dataPoint
@@ -137,23 +136,22 @@ export const CoinsTable = ({ queryUrl, coins }: CoinsTableProps) => {
                 }))
 
                 const weekPriceChange = parseFloatOrDefault(price_change_percentage_7d_in_currency, 1);
-                let color = 'blue'
-                if      (weekPriceChange > 0) color = 'green'
-                else if (weekPriceChange < 0) color = 'red'
+                const chartColor = getPriceColor(weekPriceChange)
+
                 return (
                     <LineChart
-                        style={{ width: '100px', maxWidth: '700px', height: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
+                        style={{ width: '100px', maxWidth: '700px', height: '50%', maxHeight: '70vh', aspectRatio: 1.618 }}
                         data={finalizedData}
                         margin={{
-                            top: 0,
+                            top: 10,
                             right: 0,
                             left: 0,
-                            bottom: 0,
+                            bottom: 10,
                         }}
                     >
                         <XAxis dataKey="x" hide/>
-                        <YAxis width="auto" hide />
-                        <Line type="monotone" dataKey="y" stroke={color} dot={false} activeDot={false} />
+                        <YAxis width="auto" hide domain={['dataMin', 'dataMax']} />
+                        <Line type="monotone" dataKey="y" stroke={chartColor} dot={false} activeDot={false} />
                     </LineChart>
                 )
             }

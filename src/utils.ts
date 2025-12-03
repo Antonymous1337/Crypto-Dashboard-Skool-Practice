@@ -46,11 +46,17 @@ export const parseFloatOrDefault = (str: string | undefined, onFail: number) => 
     return parsedStr
 }
 
-export const toFixedLocaleString = (num: number, precision: number, style?: keyof Intl.NumberFormatOptionsStyleRegistry , currency?: string) => {
+export const toFixedLocaleString = (num: number, precision: number, style?: keyof Intl.NumberFormatOptionsStyleRegistry , currency: string = 'USD') => {
     return num.toLocaleString(navigator.language, {
         minimumFractionDigits: precision,
         maximumFractionDigits: precision,
         style: style,
-        currency: currency ?? 'USD'
+        currency: style === 'currency' ? currency : undefined
     })
+}
+
+export const getPriceColor = (priceDifferencial: number) => {
+    if      (priceDifferencial > 0) return 'green'
+    else if (priceDifferencial < 0) return 'red'
+    return 'blue'
 }
