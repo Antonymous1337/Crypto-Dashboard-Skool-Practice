@@ -13,6 +13,7 @@ interface ButtonProps {
     selectedBorder?: string;
     onClickFn?: () => void;
     onHoverFn?: () => void;
+    styles?: React.CSSProperties;
 }
 
 const Button = ({
@@ -27,7 +28,8 @@ const Button = ({
     selectedFillColor = 'blue',
     selectedBorder = '1px solid white',
     onClickFn,
-    onHoverFn
+    onHoverFn,
+    styles
 }: ButtonProps) => {
     const [hover, setHover] = useState<boolean>(false);
     const buttonStyle: React.CSSProperties = {
@@ -38,6 +40,7 @@ const Button = ({
         padding: padding,
         cursor: 'pointer',
         opacity: hover ? 1 : 0.8,
+        ...styles
     }
 
     

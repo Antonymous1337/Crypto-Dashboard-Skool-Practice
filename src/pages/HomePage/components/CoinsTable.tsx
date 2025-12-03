@@ -5,6 +5,7 @@ import { Line, LineChart, XAxis, YAxis } from 'recharts';
 import { useCallback, useMemo } from 'react';
 import { SortValue } from '../types/SortValue';
 import { getSortedState } from '../types/SortedState';
+import Pagination from '../../../components/Pagination';
 
 // import { useQuery } from "@tanstack/react-query";
 
@@ -186,10 +187,38 @@ export const CoinsTable = ({ queryUrl, setQueryUrl, coins }: CoinsTableProps) =>
     }, [page, itemsPerPage, marketCapSortCallback, marketCapSortedState, volumeSortCallback, volumeSortedState]);
     
 
+    if (!coins || coins.length === 0) {
+        return (
+            <>
+                <div>No coins available.</div>
+                <Pagination 
+                    currentPage={page}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={(newPage: number) => {
+                        const newOptions = { ...destructuredURL.options, page: [newPage.toString()] }
+                        const newURL = structureURLEndpoint(destructuredURL.baseURL, newOptions)
+                        setQueryUrl(newURL)
+                    }}
+                />
+            </>
+        )
+    }
+
     return (
-        <Table<CryptoAsset> 
-            columns={desiredColumns}
-            data={coins}
-        />
+        <>
+            <Table<CryptoAsset> 
+                columns={desiredColumns}
+                data={coins}
+            />
+            <Pagination 
+                currentPage={page}
+                itemsPerPage={itemsPerPage}
+                onPageChange={(newPage: number) => {
+                    const newOptions = { ...destructuredURL.options, page: [newPage.toString()] }
+                    const newURL = structureURLEndpoint(destructuredURL.baseURL, newOptions)
+                    setQueryUrl(newURL)
+                }}
+            />
+        </>
     );
 }

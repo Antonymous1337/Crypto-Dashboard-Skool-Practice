@@ -1,15 +1,17 @@
 interface StackProps {
+    children: React.ReactNode;
     direction?: 'row' | 'column';
     gap?: string;
-    children: React.ReactNode;
+    styles?: React.CSSProperties;
 }
 
-const Stack = ({ direction = "row", gap = "1em", children }: StackProps) => {
+const Stack = ({ children, direction = "row", gap = "1em", styles }: StackProps) => {
 
     const stackStyle: React.CSSProperties = {
         display: 'flex',
         flexDirection: direction,
         gap: gap,
+        ...styles
     };
     
     return (
