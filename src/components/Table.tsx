@@ -1,5 +1,7 @@
+import Clickable from "./Clickable";
 import type { Data } from "../pages/HomePage/types/Data";
 import type { JSX } from "react";
+import type { SortedState } from "../pages/HomePage/types/SortedState";
 
 interface TableProps<T extends Data> {
     columns: TableColumn[];
@@ -11,9 +13,16 @@ interface TableProps<T extends Data> {
  */
 const Table = <T extends Data,>({ columns, data }: TableProps<T>) => {
 
-    const parsedHeaders = columns.map((col, i) => (
-        <th key={`header-${col.label}-${i}`}>{col.label}</th>
-    ))
+    const parsedHeaders = columns.map((col, i) => {
+
+        const textWrapper = col.onSort 
+            ? <Clickable onClick={col.onSort}>{col.label}</Clickable>
+            : <>{col.label}</>
+
+        return (
+            <th key={`header-${col.label}-${i}`}>{textWrapper}</th>
+        )
+    })
 
     const parsedData = data.map((row, rowi) => (
         <tr key={`row-${rowi}`}>
@@ -58,6 +67,8 @@ export interface TableColumn {
     label: string;
     rendererParams: string[]
     renderer: (params: Record<string, string>) => JSX.Element;
+    onSort?: () => void;
+    sortedState?: SortedState
 }
 
 export default Table;
